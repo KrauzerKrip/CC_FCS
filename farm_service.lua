@@ -1,15 +1,13 @@
 require "math"
 
-turtle.select(16)
-turtle.refuel()
-turtle.select(1)
-
 local slotHoe = 1
 local slotShovel = 2
 local turnsCounter = 0
 local farmLength = 25
 local agricultureId = "minecraft:wheat"
 local wallBlockId = "minecraft:cobblestone"
+local hoeId = "minecraft:diamond_hoe"
+local shovelId = "minecraft:diamond_shovel"
 
 
 function till()
@@ -60,18 +58,6 @@ function goUntilBlocked()
     return data.name
 end
 
--- function goTillOnPlantsLevel()
---     local isBlockedOnPlantsLevel = false
-    
---     while not isBlockedOnPlantsLevel do
---         till()
---         isBlockedOnPlantsLevel = not turtle.forward()
---     end
-
---     local _, data = turtle.inspect()
---     return data.name
--- end
-
 function goMaintainUntilBlocked()
     local isBlocked = false;
     while not isBlocked do
@@ -110,18 +96,38 @@ function maintainFarm()
     end
 end
 
-print("cat")
-print(turtle.getFuelLevel())
-
-if (turtle.getItemDetail(slotHoe).name == "minecraft:diamond_hoe") and (turtle.getItemDetail(slotShovel).name == "minecraft:diamond_shovel") then 
-    turtle.select(slotHoe)
-    turtle.equipRight()
-    turtle.select(slotShovel)
-    turtle.equipLeft()
-    turtle.select(16)
-else
-     print("Error: I don`t have instruments or their order isn`t right. Place a diamond hoe on the first slote, and a diamond shovel on the second.")
+function checkTool(toolSlot, toolId) 
+    turtle.select(toolSlot)
+    local itemData = turtle.getItemDetail()
+    if itemData == nil then
+        turtle.equipRight()
+        if turtle.getItemDetail().name ~= toolId then
+            error("Error: I don`t have tool "..toolId "or it`s slot isn`t right. Place a diamond hoe on the first slote, and a diamond shovel on the second.")
+        end
+        turtle.equipRight()
+    else
+        if itemData.name == toolId then 
+            turtle.equipRight()
+        else
+            turtle.drop()
+            turtle.equipRight()
+            if turtle.getItemDetail().name ~= toolId then
+                error("Error: I don`t have tool "..toolId "or it`s slot isn`t right. Place a diamond hoe on the first slote, and a diamond shovel on the second.")
+            end
+            turtle.equipRight()
+        end
+    end
 end
 
+function prepare() 
+    turtle.select(16)
+    turtle.refuel()
+    turtle.select(1)
+
+    checkTool(slotHoe, hoeId)
+    checkTool(slotShovel, shovelId)
+end
+
+prepare()
 maintainFarm()
---returnHome()
+
